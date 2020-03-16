@@ -17,6 +17,31 @@ class APromise {
     handle(this, { promise, onResolved, onRejected })
     return promise
   }
+  catch(func) {
+    this.then.call(this, null, func)
+  }
+
+  static all(arr) {
+    return new Promise((fulfill, rejected) => {
+      let result = []
+      for (let i = 0; i < arr.length; i++) {
+        arr[i].then(res => {
+          result[i] = res
+          if (result.length === arr.length) {
+            fulfill(result)
+          }
+        }, rejected)
+      }
+    })
+  }
+
+  static race(arr) {
+    return new Promise((fulfill, rejected) => {
+      for (let i = 0; i < arr.length; i++) {
+        arr[i].then(fulfill, rejected)
+      }
+    })
+  }
 }
 
 function resolve(promise, value) {
@@ -56,6 +81,7 @@ function doResolve(promise, executor) {
     wrapReject(err)
   }
 }
+
 // 检查 promise 的状态
 function handle(promise, handler) {
   while (promise.value instanceof APromise) {

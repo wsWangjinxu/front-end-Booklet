@@ -228,3 +228,45 @@ test('异步处理程序，如果一个 handler 在将来返回了一个 promise
     expect(f1.mock.calls[0][0]).toBe(value)
   }, 10)
 })
+
+test('catch', () => {
+  const reason = new Error('fail')
+  const f1 = jest.fn()
+  new APromise(fulfill => {
+    throw reason
+  }).catch(f1)
+  expect(f1).toHaveBeenCalledTimes(1)
+})
+
+test('promise.all 所有都通过', () => {
+  let value = 'resolve'
+  let promiseArr = []
+  for (let i = 0; i < 3; i++) {
+    promiseArr.push(new APromise(resolve => resolve(value)))
+  }
+  let result = APromise.all(promiseArr)
+  result.then(res => {
+    expect(res.length).toBe(3)
+    expect(res[0]).toBe(value)
+    expect(res[1]).toBe(value)
+    expect(res[2]).toBe(value)
+  })
+})
+
+test('promise.all 部分不通过', () => {
+  let value = 'resolve'
+  let reason = 'rejected'
+  let promiseArr = []
+  for (let i = 0; i < 3; i++) {
+    promiseArr.push(new APromise(resolve => resolve(value)))
+  }
+  promiseArr.push(new APromise((resolve, reject) => reject(reason)))
+  let result = APromise.all(promiseArr)
+  result.then(res => {
+    expect(res.length).toBe(4)
+    expect(res[0]).toBe(value)
+    expect(res[1]).toBe(value)
+    expect(res[2]).toBe(value)
+    expect(res[3]).toBe(reason)
+  })
+})
