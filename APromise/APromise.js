@@ -1,81 +1,91 @@
-const PENDING = "PENDING";
-const RESOLVE = "RESOLVE";
-const REJECTED = "REJECTED";
+const PENDING = 'PENDING'
+const RESOLVE = 'RESOLVE'
+const REJECTED = 'REJECTED'
 
 class APromise {
   constructor(executor) {
-    this.state = PENDING;
+    this.state = PENDING
     // .then handler queue
-    this.queue = [];
+    this.queue = []
 
-    doResolve(this, executor);
+    doResolve(this, executor)
   }
 
   then(onResolved, onRejected) {
-    handle(this, { onResolved, onRejected });
+    const promise = new APromise(() => {})
+    // store the promise as well
+    handle(this, { promise, onResolved, onRejected })
+    return promise
   }
 }
 
 function resolve(promise, value) {
-  promise.state = RESOLVE;
-  promise.value = value;
-  finale(promise);
+  promise.state = RESOLVE
+  promise.value = value
+  finale(promise)
 }
 
 function reject(promise, reason) {
-  promise.state = REJECTED;
-  promise.value = reason;
-  finale(promise);
+  promise.state = REJECTED
+  promise.value = reason
+  finale(promise)
 }
 
 function doResolve(promise, executor) {
-  let called = false;
+  let called = false
 
   function wrapResolve(value) {
     if (called) {
-      return;
+      return
     }
-    called = true;
-    resolve(promise, value);
+    called = true
+    resolve(promise, value)
   }
 
   function wrapReject(reason) {
     if (called) {
-      return;
+      return
     }
-    called = true;
-    reject(promise, reason);
+    called = true
+    reject(promise, reason)
   }
 
   try {
-    executor(wrapResolve, wrapReject);
+    executor(wrapResolve, wrapReject)
   } catch (err) {
-    wrapReject(err);
+    wrapReject(err)
   }
 }
 // 检查 promise 的状态
 function handle(promise, handler) {
+  while (promise.value instanceof APromise) {
+    promise = promise.value
+  }
   if (promise.state === PENDING) {
     // 等待状态入队
-    promise.queue.push(handler);
+    promise.queue.push(handler)
   } else {
     // 立即执行
-    handleResolved(promise, handler);
+    handleResolved(promise, handler)
   }
 }
 
 // 调用所有的handler
 function finale(promise) {
-  const length = promise.queue.length;
+  const length = promise.queue.length
   for (let i = 0; i < length; i++) {
-    handle(promise, promise.queue[i]);
+    handle(promise, promise.queue[i])
   }
 }
 
 function handleResolved(promise, handler) {
-  const cb =
-    promise.state === RESOLVE ? handler.onResolved : handler.onRejected;
-  cb(promise.value);
+  const cb = promise.state === RESOLVE ? handler.onResolved : handler.onRejected
+  try {
+    const value = cb(promise.value)
+    resolve(handler.promise, value)
+  } catch (err) {
+    reject(handler.promise, err)
+  }
 }
 
-module.exports = APromise;
+module.exports = APromise
