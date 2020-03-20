@@ -1,0 +1,23 @@
+{
+  "name": "front-end-booklet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ajax.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wsWangjinxu/front-end-Booklet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wsWangjinxu/front-end-Booklet/issues"
+  },
+  "homepage": "https://github.com/wsWangjinxu/front-end-Booklet#readme",
+  "devDependencies": {
+    "jest": "^25.1.0"
+  }
+}
